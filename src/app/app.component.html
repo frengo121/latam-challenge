@@ -1,0 +1,12 @@
+<mat-toolbar color="primary" role="banner">
+  <span>{{ title }}</span>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/users" aria-label="Go to users list">
+    <mat-icon>people</mat-icon>
+    Users
+  </a>
+</mat-toolbar>
+
+<main class="main-content" role="main">
+  <router-outlet />
+</main>
