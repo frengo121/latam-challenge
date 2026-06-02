@@ -264,17 +264,17 @@ body.dark-theme {
     color: rgba(255, 255, 255, 0.87) !important;
   }
 
-  // Form field outline border color
+  // Form field outline border — subtle resting, more visible on hover
   .mdc-notched-outline__leading,
   .mdc-notched-outline__notch,
   .mdc-notched-outline__trailing {
-    border-color: rgba(255, 255, 255, 0.38) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
   }
 
   .mat-mdc-form-field:hover .mdc-notched-outline__leading,
   .mat-mdc-form-field:hover .mdc-notched-outline__notch,
   .mat-mdc-form-field:hover .mdc-notched-outline__trailing {
-    border-color: rgba(255, 255, 255, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.38) !important;
   }
 
   // Select panel background (dropdown)
