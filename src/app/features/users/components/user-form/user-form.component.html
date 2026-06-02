@@ -2,13 +2,12 @@
   <h1>{{ isEditMode ? 'Edit User' : 'New User' }}</h1>
 
   @if (store.loading()) {
-    <app-loading-skeleton message="Loading user data..." />
+    <app-loading-skeleton type="card" [rows]="4" />
   }
 
   <mat-card class="form-card">
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate aria-label="User form">
-
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Username</mat-label>
           <input matInput formControlName="username" autocomplete="username" aria-required="true" />
@@ -64,14 +63,10 @@
           }
         </mat-form-field>
 
-        <mat-checkbox formControlName="active" class="active-checkbox">
-          Active user
-        </mat-checkbox>
+        <mat-checkbox formControlName="active" class="active-checkbox">Active user</mat-checkbox>
 
         <div class="form-actions">
-          <button type="button" mat-button (click)="cancel()" aria-label="Cancel">
-            Cancel
-          </button>
+          <button type="button" mat-button (click)="cancel()" aria-label="Cancel">Cancel</button>
           <button
             type="submit"
             mat-flat-button
@@ -82,7 +77,6 @@
             {{ isEditMode ? 'Save Changes' : 'Create User' }}
           </button>
         </div>
-
       </form>
     </mat-card-content>
   </mat-card>
