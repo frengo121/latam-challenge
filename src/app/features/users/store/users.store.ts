@@ -52,27 +52,34 @@ export class UsersStore {
 
     this.api.getUsers(apiFilters).subscribe({
       next: (res: UsersResponse) => {
-        let users = res.users.map(apiUser => {
+        const apiIds = new Set(res.users.map(u => u.id));
+
+        // Users created locally this session don't exist in DummyJSON — preserve them
+        const localUsers = this._users().filter(u => !apiIds.has(u.id));
+
+        const apiUsers = res.users.map(apiUser => {
           const local = this._users().find(u => u.id === apiUser.id);
           return local
             ? { ...apiUser, active: local.active, updated_at: local.updated_at }
             : apiUser;
         });
 
-        if (filters.role) users = users.filter(u => u.role === filters.role);
-        if (filters.active !== null) users = users.filter(u => u.active === filters.active);
+        let allUsers = [...localUsers, ...apiUsers];
+
+        if (filters.role) allUsers = allUsers.filter(u => u.role === filters.role);
+        if (filters.active !== null) allUsers = allUsers.filter(u => u.active === filters.active);
 
         if (hasClientFilter) {
           const start = (filters.page - 1) * filters.pageSize;
-          this._users.set(users.slice(start, start + filters.pageSize));
-          this._total.set(users.length);
+          this._users.set(allUsers.slice(start, start + filters.pageSize));
+          this._total.set(allUsers.length);
         } else {
-          this._users.set(users);
-          this._total.set(res.total);
+          this._users.set(allUsers);
+          this._total.set(res.total + localUsers.length);
         }
 
         this._loading.set(false);
-        this.logger.log('[UsersStore] Loaded', users.length, 'users');
+        this.logger.log('[UsersStore] Loaded', allUsers.length, 'users');
       },
       error: (err: HttpErrorResponse) => {
         this._error.set(err.message ?? 'Failed to load users');
