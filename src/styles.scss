@@ -252,4 +252,70 @@ body.dark-theme {
   h3 {
     color: rgba(255, 255, 255, 0.87);
   }
+
+  // Buttons: mat-button and mat-icon-button text/icon color
+  .mat-mdc-button:not([color]),
+  .mat-mdc-icon-button:not([color]) {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  // Table: username link button stays white
+  .username-link {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  // Form field outline border color
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: rgba(255, 255, 255, 0.38) !important;
+  }
+
+  .mat-mdc-form-field:hover .mdc-notched-outline__leading,
+  .mat-mdc-form-field:hover .mdc-notched-outline__notch,
+  .mat-mdc-form-field:hover .mdc-notched-outline__trailing {
+    border-color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  // Select panel background (dropdown)
+  .mat-mdc-select-panel,
+  .cdk-overlay-pane .mat-mdc-autocomplete-panel {
+    background-color: #2d2d2d !important;
+  }
+
+  // Card title and subtitle
+  .mat-mdc-card-title,
+  .mat-mdc-card-subtitle {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  // Checkbox label
+  .mdc-label,
+  .mat-mdc-checkbox label {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  // mat-card-actions cancel/stroked button text
+  .mat-mdc-outlined-button:not([color]) {
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-color: rgba(255, 255, 255, 0.38) !important;
+  }
+
+  // Icon colors in buttons without explicit color
+  .mat-icon {
+    color: inherit;
+  }
+
+  // Menu panel background
+  .mat-mdc-menu-panel {
+    background-color: #2d2d2d !important;
+  }
+
+  .mat-mdc-menu-item {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-menu-item .mat-icon {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
 }
