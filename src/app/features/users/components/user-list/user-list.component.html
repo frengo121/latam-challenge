@@ -1,0 +1,149 @@
+<div class="page-header">
+  <h1>Users</h1>
+  <a mat-flat-button color="primary" routerLink="/users/new" aria-label="Create new user">
+    <mat-icon>add</mat-icon>
+    New User
+  </a>
+</div>
+
+<div class="filters-row" role="search">
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search users</mat-label>
+    <input matInput [formControl]="searchControl" placeholder="Username or email..." aria-label="Search users" />
+    <mat-icon matSuffix aria-hidden="true">search</mat-icon>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Role</mat-label>
+    <mat-select
+      [value]="store.filters().role"
+      (selectionChange)="onRoleFilter($event.value)"
+      aria-label="Filter by role"
+    >
+      @for (opt of roleOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Status</mat-label>
+    <mat-select
+      [value]="store.filters().active"
+      (selectionChange)="onActiveFilter($event.value)"
+      aria-label="Filter by status"
+    >
+      <mat-option [value]="null">All</mat-option>
+      <mat-option [value]="true">Active</mat-option>
+      <mat-option [value]="false">Inactive</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (store.loading()) {
+  <app-loading-skeleton message="Loading users..." />
+}
+
+@if (store.error() && !store.loading()) {
+  <div class="error-banner" role="alert">
+    <mat-icon color="warn">error</mat-icon>
+    <span>{{ store.error() }}</span>
+    <button mat-button (click)="store.loadUsers()">Retry</button>
+  </div>
+}
+
+@if (!store.loading() && !store.error()) {
+  @if (store.users().length === 0) {
+    <app-empty-state
+      icon="people_outline"
+      title="No users found"
+      message="Try adjusting your search or filters."
+    />
+  } @else {
+    <div class="table-container" role="region" aria-label="Users table">
+      <table mat-table [dataSource]="store.users()" class="users-table" aria-label="User list">
+
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef scope="col">Username</th>
+          <td mat-cell *matCellDef="let user">
+            <button mat-button (click)="navigateTo(user.id)" class="username-link">
+              {{ user.username }}
+            </button>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef scope="col">Email</th>
+          <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef scope="col">Role</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="role-chip role-{{ user.role }}">{{ user.role }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef scope="col">Status</th>
+          <td mat-cell *matCellDef="let user">
+            <span [class]="user.active ? 'status-active' : 'status-inactive'">
+              {{ user.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef scope="col">Actions</th>
+          <td mat-cell *matCellDef="let user">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              [attr.aria-label]="'Actions for ' + user.username"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="navigateTo(user.id)">
+                <mat-icon>visibility</mat-icon>View
+              </button>
+              <button mat-menu-item (click)="navigateToEdit(user.id)">
+                <mat-icon>edit</mat-icon>Edit
+              </button>
+              @if (user.active) {
+                <button mat-menu-item (click)="confirmDeactivate(user.id, user.username)">
+                  <mat-icon>block</mat-icon>Deactivate
+                </button>
+              }
+              <button
+                mat-menu-item
+                class="danger-item"
+                (click)="confirmDelete(user.id, user.username)"
+              >
+                <mat-icon color="warn">delete</mat-icon>Delete
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns;"
+          tabindex="0"
+          (keydown.enter)="navigateTo(row.id)"
+          [attr.aria-label]="'User ' + row.username"
+        ></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="store.total()"
+      [pageSize]="store.filters().pageSize"
+      [pageIndex]="store.filters().page - 1"
+      [pageSizeOptions]="[5, 10, 25]"
+      (page)="onPageChange($event)"
+      aria-label="Users pagination"
+    />
+  }
+}
