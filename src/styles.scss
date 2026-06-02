@@ -126,6 +126,22 @@ body {
     color: rgba(0, 0, 0, 0.54);
     font-weight: 500;
   }
+  dd {
+    margin: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 2px 0;
+    dt {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
 }
 
 // Form
