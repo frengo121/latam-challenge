@@ -16,6 +16,9 @@ Consumes the [DummyJSON](https://dummyjson.com/users) API to perform full CRUD o
 | Angular Signals | built-in | State management |
 | Angular Reactive Forms | built-in | Form validation |
 | Karma + Jasmine | built-in | Unit testing |
+| Playwright | 1.x | End-to-end testing |
+| Prettier | 3.x | Code formatting |
+| Husky + lint-staged | 9.x / 15.x | Pre-commit hooks |
 
 ---
 
@@ -36,7 +39,7 @@ npm install
 ng serve
 ```
 
-Opens at `http://localhost:4200`. The app automatically reloads on file changes.
+Opens at `http://localhost:4200`. The app reloads automatically on file changes.
 
 ---
 
@@ -54,17 +57,58 @@ Output goes to `dist/latam-challenge/`. Production build includes:
 
 ---
 
-## Run Tests
+## Run Unit Tests
 
 ```bash
 ng test --watch=false
 ```
 
-Runs the full unit test suite (17 tests) via Karma + Jasmine. Individual file:
+Runs the full unit test suite (**21 tests**) via Karma + Jasmine. Run a single file:
 
 ```bash
 ng test --include="**/user-api.service.spec.ts" --watch=false
 ```
+
+Test files covered:
+
+| File | Tests |
+|------|-------|
+| `logger.service.spec.ts` | 4 |
+| `user-api.service.spec.ts` | 6 |
+| `users.store.spec.ts` | 4 |
+| `toast.service.spec.ts` | 3 |
+| `app.component.spec.ts` | 3 |
+| **Total** | **21** |
+
+---
+
+## Run E2E Tests (Playwright)
+
+> The dev server must be running at `http://localhost:4200` before running E2E tests.
+
+```bash
+# First-time setup — install Playwright browser binaries
+npx playwright install chromium
+
+# Start the dev server (in a separate terminal)
+ng serve
+
+# Run the E2E suite
+npm run e2e
+
+# Open the HTML report after a run
+npm run e2e:report
+```
+
+E2E flows covered:
+
+| Test | Flow |
+|------|------|
+| Load users list | Table, paginator, and rows are visible |
+| Search | Debounced search returns matching results |
+| Filter by role | Dropdown filters client-side; all results match role |
+| Full user flow | Create → view detail → edit → deactivate |
+| Cancel delete dialog | Dialog opens and closes without deleting |
 
 ---
 
@@ -75,11 +119,11 @@ Edit `src/environments/environment.ts` to change the API base URL:
 ```typescript
 export const environment = {
   production: false,
-  apiUrl: 'https://dummyjson.com', // change this
+  apiUrl: 'https://dummyjson.com', // change this to point to another API
 };
 ```
 
-In production, `src/environments/environment.prod.ts` is used instead (Angular CLI file replacement).
+In production, `src/environments/environment.prod.ts` is used (Angular CLI file replacement).
 
 ---
 
@@ -126,7 +170,9 @@ DummyJSON returns camelCase and is missing some fields. All mapping happens in `
 | `updated_at` | _(missing)_ | `new Date().toISOString()` on update |
 | `role` | `role` | Unknown roles normalized to `'user'` |
 
-Since DummyJSON doesn't persist mutations (POST/PUT/DELETE respond successfully but don't save), `UsersStore` maintains an in-memory list that merges API responses with local mutations (active state, updated_at) to simulate persistence within the session.
+Since DummyJSON doesn't persist mutations, `UsersStore` maintains an in-memory list that merges API responses with local mutations (active state, updated_at) to simulate persistence within the session.
+
+> **Note:** Deactivating a user or creating one persists only for the current browser session. A full page refresh will restore the original DummyJSON state — this is an expected limitation of using a mock API.
 
 ---
 
@@ -148,7 +194,7 @@ private _users = signal<User[]>([]);
 // Public readonly — components only read
 readonly users = this._users.asReadonly();
 
-// Derived state — computed automatically
+// Derived state — recomputed automatically
 readonly totalPages = computed(() => Math.ceil(this._total() / this._filters().pageSize));
 ```
 
@@ -217,6 +263,30 @@ Errors show per-field on touch. `form.markAllAsTouched()` reveals all errors on 
 - Loading state uses `role="status"` + `aria-live="polite"`
 - Keyboard navigation: `tabindex="0"` + `keydown.enter` on table rows
 - Angular Material provides focus states and contrast out of the box
+
+---
+
+## Bonus Features
+
+All optional extras from the challenge spec were implemented:
+
+### Dark Mode
+Toggle in the top toolbar (moon/sun icon). Preference is persisted in `localStorage` and restored on page load. Dark theme overrides all Angular Material components via a `.dark-theme` class on `<body>`.
+
+### Skeleton Loaders
+The `LoadingSkeletonComponent` renders shimmer-animated placeholder boxes instead of a spinner:
+- **`type="table"`** — mimics the user table rows (used in `UserListComponent`)
+- **`type="card"`** — mimics a detail/form card (used in `UserDetailComponent` and `UserFormComponent`)
+- Adapts colors automatically in dark mode via `:host-context(.dark-theme)`
+
+### Husky + Prettier + lint-staged
+Pre-commit hook runs Prettier on all staged `*.ts`, `*.html`, `*.scss`, and `*.json` files before every commit. Configuration in `.prettierrc` and `package.json` (`lint-staged` key).
+
+### Server-Side Pagination + Debounced Search
+Search is debounced at 300ms (`debounceTime` + `distinctUntilChanged`) and hits the DummyJSON `/users/search` endpoint. Pagination uses DummyJSON's `skip`/`limit` parameters. Role and active filters are applied client-side (DummyJSON does not support them natively).
+
+### E2E Tests (Playwright)
+Five tests covering the full user management flow. See [Run E2E Tests](#run-e2e-tests-playwright) section above.
 
 ---
 
