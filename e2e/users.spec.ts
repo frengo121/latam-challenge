@@ -1,46 +1,62 @@
 import { test, expect, Page } from '@playwright/test';
 
-// Waits for the users table to finish loading
-async function waitForTable(page: Page) {
-  await page.waitForSelector('table.users-table', { timeout: 15000 });
-  await page.waitForSelector('app-loading-skeleton', { state: 'detached', timeout: 15000 });
+// Wait for the loading skeleton to disappear (handles both fast and slow responses)
+async function waitForResults(page: Page) {
+  try {
+    await page.waitForSelector('app-loading-skeleton', { state: 'detached', timeout: 15000 });
+  } catch {
+    // skeleton may not have appeared if the response was instant
+  }
+  // Wait for either the data table or the empty state to be visible
+  await page.waitForSelector('table.users-table, app-empty-state', { timeout: 15000 });
 }
 
 test.describe('User Management — Main Flows', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/users');
-    await waitForTable(page);
+    await waitForResults(page);
   });
 
   test('should load the users list and show the table', async ({ page }) => {
-    await expect(page).toHaveTitle(/User Management/);
+    // Route title comes from users.routes.ts: title: 'Users'
+    await expect(page).toHaveTitle(/Users/);
     await expect(page.locator('table.users-table')).toBeVisible();
-    await expect(page.locator('mat-row').first()).toBeVisible();
-    // Paginator should be present
+    // Angular Material renders rows as <tr class="mat-mdc-row">
+    await expect(page.locator('tr.mat-mdc-row').first()).toBeVisible();
     await expect(page.locator('mat-paginator')).toBeVisible();
   });
 
   test('should search for users by username', async ({ page }) => {
     await page.fill('input[aria-label="Search users"]', 'john');
-    // Wait for debounce (300ms) + API response
+    // Wait for debounce (300ms) + API
     await page.waitForTimeout(600);
-    await waitForTable(page);
+    await waitForResults(page);
 
-    const rows = page.locator('mat-row');
+    const rows = page.locator('tr.mat-mdc-row');
     const count = await rows.count();
     expect(count).toBeGreaterThan(0);
   });
 
   test('should filter users by role', async ({ page }) => {
+    // Open the dropdown first, then use Promise.all so waitForResponse
+    // captures exactly the API call triggered by the option click
     await page.locator('mat-select[aria-label="Filter by role"]').click();
-    await page.locator('mat-option').filter({ hasText: 'Admin' }).click();
-    await waitForTable(page);
 
-    const roleChips = page.locator('.role-chip');
-    const count = await roleChips.count();
-    expect(count).toBeGreaterThan(0);
-    for (let i = 0; i < count; i++) {
-      await expect(roleChips.nth(i)).toHaveText('admin');
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/users'), { timeout: 10000 }),
+      page.locator('mat-option').filter({ hasText: 'Admin' }).click(),
+    ]);
+
+    // Wait for at least one admin chip to appear (confirms filtered data is rendered)
+    await expect(page.locator('.role-chip.role-admin').first()).toBeVisible({ timeout: 10000 });
+    // Then verify no non-admin chips coexist
+    await expect(page.locator('.role-chip:not(.role-admin)')).toHaveCount(0);
+
+    // Stable snapshot — all visible chips should be admin
+    const chips = await page.locator('.role-chip').all();
+    expect(chips.length).toBeGreaterThan(0);
+    for (const chip of chips) {
+      await expect(chip).toHaveText('admin');
     }
   });
 
@@ -51,17 +67,18 @@ test.describe('User Management — Main Flows', () => {
     await page.click('a[aria-label="Create new user"]');
     await expect(page).toHaveURL(/\/users\/new/);
 
-    await page.fill('input[formcontrolname="username"]', username);
-    await page.fill('input[formcontrolname="email"]', `${username}@test.com`);
-    await page.fill('input[formcontrolname="first_name"]', 'E2E');
-    await page.fill('input[formcontrolname="last_name"]', 'Tester');
+    // Use getByLabel — Angular Material connects mat-label via aria-labelledby
+    await page.getByLabel('Username').fill(username);
+    await page.getByLabel('Email').fill(`${username}@test.com`);
+    await page.getByLabel('First Name').fill('E2E');
+    await page.getByLabel('Last Name').fill('Tester');
 
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/users$/, { timeout: 10000 });
-    await waitForTable(page);
+    await waitForResults(page);
 
     // ── 2. SEE IN LIST ────────────────────────────────────────
-    const userRow = page.locator(`tr:has(button:has-text("${username}"))`);
+    const userRow = page.locator(`tr.mat-mdc-row:has(button:has-text("${username}"))`);
     await expect(userRow).toBeVisible();
     await expect(userRow.locator('.status-active')).toBeVisible();
 
@@ -75,34 +92,41 @@ test.describe('User Management — Main Flows', () => {
     await page.click('button[aria-label="Edit user"]');
     await expect(page).toHaveURL(/\/edit$/);
 
-    await page.fill('input[formcontrolname="first_name"]', 'Edited');
+    // Wait for form pre-population (setInterval in ngOnInit patches the form)
+    await expect(page.getByLabel('Username')).not.toHaveValue('', { timeout: 5000 });
+
+    await page.getByLabel('First Name').fill('Edited');
     await page.click('button[type="submit"]');
 
     await page.waitForURL(/\/users$/, { timeout: 10000 });
-    await waitForTable(page);
+    await waitForResults(page);
 
     // ── 5. DEACTIVATE ─────────────────────────────────────────
-    const editedRow = page.locator(`tr:has(button:has-text("${username}"))`);
-    await editedRow.locator('button[mat-icon-button]').click();
+    const editedRow = page.locator(`tr.mat-mdc-row:has(button:has-text("${username}"))`);
+    // Actions button has aria-label="Actions for <username>"
+    await editedRow.locator(`button[aria-label="Actions for ${username}"]`).click();
     await page.locator('button[mat-menu-item]:has-text("Deactivate")').click();
 
-    // Confirm in dialog
-    await page.locator('.mat-mdc-dialog-actions button[color="warn"]').click();
+    // Confirm in dialog — scope to dialog to avoid ambiguity with menu item
+    const dialog = page.locator('mat-dialog-container');
+    await dialog.getByRole('button', { name: 'Deactivate' }).click();
 
-    // User should now be inactive
+    // User should now show as inactive
     await expect(editedRow.locator('.status-inactive')).toBeVisible();
   });
 
   test('should open and cancel a delete confirmation dialog', async ({ page }) => {
-    const firstRowMenu = page.locator('tr[mat-row]').first().locator('button[mat-icon-button]');
-    await firstRowMenu.click();
+    const firstRow = page.locator('tr.mat-mdc-row').first();
+    const username = await firstRow.locator('button.username-link').innerText();
 
+    await firstRow.locator(`button[aria-label="Actions for ${username.trim()}"]`).click();
     await page.locator('button[mat-menu-item]:has-text("Delete")').click();
+
     await expect(page.locator('mat-dialog-container')).toBeVisible();
     await expect(page.locator('.mdc-dialog__title')).toHaveText('Delete User');
 
-    // Cancel — row should still be there
-    await page.locator('.mat-mdc-dialog-actions button:not([color])').click();
+    // Use getByRole scoped to dialog to avoid strict mode violation
+    await page.locator('mat-dialog-container').getByRole('button', { name: 'Cancel' }).click();
     await expect(page.locator('mat-dialog-container')).not.toBeVisible();
   });
 });
