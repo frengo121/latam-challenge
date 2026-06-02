@@ -6,7 +6,7 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 .spacer {
@@ -162,5 +162,94 @@ body {
 @media (max-width: 600px) {
   .main-content {
     padding: 16px 12px;
+  }
+}
+
+// Dark mode
+body.dark-theme {
+  background-color: #121212;
+  color: rgba(255, 255, 255, 0.87);
+
+  .main-content {
+    background-color: #121212;
+  }
+
+  .mat-toolbar {
+    background-color: #1f1f1f !important;
+  }
+
+  .mat-mdc-card {
+    background-color: #1e1e1e !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-table {
+    background: #1e1e1e !important;
+  }
+
+  .mat-mdc-row,
+  .mat-mdc-header-row {
+    background: #1e1e1e !important;
+  }
+
+  .mat-mdc-header-cell {
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .mat-mdc-cell {
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .mdc-text-field {
+    background-color: #2d2d2d !important;
+  }
+
+  .mat-mdc-form-field-label,
+  .mat-mdc-floating-label {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .mat-mdc-input-element {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-select-value {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-option {
+    background-color: #2d2d2d !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-paginator {
+    background: #1e1e1e !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-paginator-icon {
+    fill: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .error-banner {
+    background: #3e2020 !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .detail-grid dt {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .loading-container,
+  .empty-state {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: rgba(255, 255, 255, 0.87);
   }
 }

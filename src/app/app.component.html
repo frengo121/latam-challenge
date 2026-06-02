@@ -1,6 +1,14 @@
 <mat-toolbar color="primary" role="banner">
   <span>{{ title }}</span>
   <span class="spacer"></span>
+  <button
+    mat-icon-button
+    (click)="toggleDarkMode()"
+    [matTooltip]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+    [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+  >
+    <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
   <a mat-button routerLink="/users" aria-label="Go to users list">
     <mat-icon>people</mat-icon>
     Users
