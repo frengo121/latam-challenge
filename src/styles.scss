@@ -1,9 +1,17 @@
 /* Global styles */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-.spacer { flex: 1 1 auto; }
+.spacer {
+  flex: 1 1 auto;
+}
 
 .main-content {
   padding: 24px;
@@ -12,8 +20,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 // Toast colors
-.toast-success .mdc-snackbar__surface { background: #2e7d32 !important; }
-.toast-error .mdc-snackbar__surface { background: #c62828 !important; }
+.toast-success .mdc-snackbar__surface {
+  background: #2e7d32 !important;
+}
+.toast-error .mdc-snackbar__surface {
+  background: #c62828 !important;
+}
 
 // Page header pattern
 .page-header {
@@ -21,7 +33,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  h1 { margin: 0; }
+  h1 {
+    margin: 0;
+  }
 }
 
 // Filter row
@@ -30,7 +44,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 16px;
-  .search-field { flex: 1; min-width: 200px; }
+  .search-field {
+    flex: 1;
+    min-width: 200px;
+  }
 }
 
 // Role chips
@@ -40,14 +57,35 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: capitalize;
-  &.role-admin { background: #e3f2fd; color: #1565c0; }
-  &.role-user  { background: #e8f5e9; color: #2e7d32; }
-  &.role-guest { background: #fce4ec; color: #ad1457; }
+  &.role-admin {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  &.role-user {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  &.role-guest {
+    background: #fce4ec;
+    color: #ad1457;
+  }
+}
+
+// Action buttons
+.action-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 // Status indicators
-.status-active   { color: #2e7d32; font-weight: 500; }
-.status-inactive { color: #c62828; font-weight: 500; }
+.status-active {
+  color: #2e7d32;
+  font-weight: 500;
+}
+.status-inactive {
+  color: #c62828;
+  font-weight: 500;
+}
 
 // Error banner
 .error-banner {
@@ -61,32 +99,58 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 // Table
-.table-container { overflow-x: auto; }
-.users-table { width: 100%; }
-.username-link { text-transform: none; }
-.danger-item { color: #c62828; }
+.table-container {
+  overflow-x: auto;
+}
+.users-table {
+  width: 100%;
+}
+.username-link {
+  text-transform: none;
+}
+.danger-item {
+  color: #c62828;
+}
 
 // Detail card
-.detail-card { max-width: 600px; margin-top: 24px; }
+.detail-card {
+  max-width: 600px;
+  margin-top: 24px;
+}
 .detail-grid {
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 12px 16px;
   margin-top: 16px;
-  dt { color: rgba(0,0,0,.54); font-weight: 500; }
+  dt {
+    color: rgba(0, 0, 0, 0.54);
+    font-weight: 500;
+  }
 }
 
 // Form
-.form-page { max-width: 600px; margin: 0 auto; }
-.form-card { margin-top: 16px; }
-.full-width { width: 100%; }
+.form-page {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.form-card {
+  margin-top: 16px;
+}
+.full-width {
+  width: 100%;
+}
 .name-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  @media (max-width: 480px) { grid-template-columns: 1fr; }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 }
-.active-checkbox { display: block; margin-bottom: 16px; }
+.active-checkbox {
+  display: block;
+  margin-bottom: 16px;
+}
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -96,5 +160,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 // Responsive
 @media (max-width: 600px) {
-  .main-content { padding: 16px 12px; }
+  .main-content {
+    padding: 16px 12px;
+  }
 }
