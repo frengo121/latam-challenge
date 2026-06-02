@@ -1,0 +1,56 @@
+@if (store.loading()) {
+  <app-loading-skeleton message="Loading user..." />
+}
+
+@if (store.error() && !store.loading()) {
+  <app-empty-state icon="error_outline" title="User not found" [message]="store.error()!" />
+}
+
+@if (store.selectedUser(); as user) {
+  <button mat-button (click)="back()" aria-label="Back to users list">
+    <mat-icon>arrow_back</mat-icon>
+    Back to Users
+  </button>
+
+  <mat-card class="detail-card">
+    <mat-card-header>
+      <mat-card-title>{{ user.first_name }} {{ user.last_name }}</mat-card-title>
+      <mat-card-subtitle>&#64;{{ user.username }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <dl class="detail-grid">
+        <dt>Email</dt>
+        <dd>{{ user.email }}</dd>
+
+        <dt>Role</dt>
+        <dd><span class="role-chip role-{{ user.role }}">{{ user.role }}</span></dd>
+
+        <dt>Status</dt>
+        <dd [class]="user.active ? 'status-active' : 'status-inactive'">
+          {{ user.active ? 'Active' : 'Inactive' }}
+        </dd>
+
+        <dt>Created</dt>
+        <dd>{{ user.created_at | date:'medium' }}</dd>
+
+        <dt>Last Updated</dt>
+        <dd>{{ user.updated_at | date:'medium' }}</dd>
+      </dl>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-flat-button color="primary" (click)="edit()" aria-label="Edit user">
+        <mat-icon>edit</mat-icon> Edit
+      </button>
+      @if (user.active) {
+        <button mat-stroked-button color="warn" (click)="confirmDeactivate()" aria-label="Deactivate user">
+          <mat-icon>block</mat-icon> Deactivate
+        </button>
+      }
+      <button mat-stroked-button color="warn" (click)="confirmDelete()" aria-label="Delete user">
+        <mat-icon>delete</mat-icon> Delete
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
