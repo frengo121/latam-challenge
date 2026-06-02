@@ -57,7 +57,8 @@ export class UserListComponent implements OnInit {
     { value: 'guest', label: 'Guest' },
   ];
 
-  searchControl = new FormControl('');
+  // Init with current store value so the input stays in sync after navigation
+  searchControl = new FormControl(this.store.filters().search);
 
   constructor() {
     this.searchControl.valueChanges
@@ -72,7 +73,7 @@ export class UserListComponent implements OnInit {
   }
 
   onPageChange(event: PageEvent): void {
-    this.store.setPage(event.pageIndex + 1);
+    this.store.setFilters({ page: event.pageIndex + 1, pageSize: event.pageSize });
   }
 
   onRoleFilter(role: UserRole | ''): void {

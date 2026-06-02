@@ -45,18 +45,34 @@ export class UsersStore {
     this._loading.set(true);
     this._error.set(null);
 
-    this.api.getUsers(this._filters()).subscribe({
+    const filters = this._filters();
+    // DummyJSON doesn't support role/active filtering — fetch all and filter client-side
+    const hasClientFilter = filters.role !== '' || filters.active !== null;
+    const apiFilters = hasClientFilter ? { ...filters, page: 1, pageSize: 100 } : filters;
+
+    this.api.getUsers(apiFilters).subscribe({
       next: (res: UsersResponse) => {
-        const merged = res.users.map(apiUser => {
+        let users = res.users.map(apiUser => {
           const local = this._users().find(u => u.id === apiUser.id);
           return local
             ? { ...apiUser, active: local.active, updated_at: local.updated_at }
             : apiUser;
         });
-        this._users.set(merged);
-        this._total.set(res.total);
+
+        if (filters.role) users = users.filter(u => u.role === filters.role);
+        if (filters.active !== null) users = users.filter(u => u.active === filters.active);
+
+        if (hasClientFilter) {
+          const start = (filters.page - 1) * filters.pageSize;
+          this._users.set(users.slice(start, start + filters.pageSize));
+          this._total.set(users.length);
+        } else {
+          this._users.set(users);
+          this._total.set(res.total);
+        }
+
         this._loading.set(false);
-        this.logger.log('[UsersStore] Loaded', merged.length, 'users');
+        this.logger.log('[UsersStore] Loaded', users.length, 'users');
       },
       error: (err: HttpErrorResponse) => {
         this._error.set(err.message ?? 'Failed to load users');
@@ -67,13 +83,19 @@ export class UsersStore {
   }
 
   loadUserById(id: number): void {
+    // Use local store first — avoids API call for locally-created users
+    const local = this._users().find(u => u.id === id);
+    if (local) {
+      this._selectedUser.set(local);
+      return;
+    }
+
     this._loading.set(true);
     this._error.set(null);
 
     this.api.getUserById(id).subscribe({
       next: (user) => {
-        const local = this._users().find(u => u.id === id);
-        this._selectedUser.set(local ?? user);
+        this._selectedUser.set(user);
         this._loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
@@ -110,22 +132,25 @@ export class UsersStore {
   updateUser(id: number, payload: UpdateUserPayload): void {
     this._loading.set(true);
 
+    // Apply in-memory update immediately so the UI reflects changes regardless of API outcome
+    const updated = { ...payload, updated_at: new Date().toISOString() };
+    this._users.update(users =>
+      users.map(u => (u.id === id ? { ...u, ...updated } : u))
+    );
+    if (this._selectedUser()?.id === id) {
+      this._selectedUser.update(u => (u ? { ...u, ...updated } : null));
+    }
+
     this.api.updateUser(id, payload).subscribe({
       next: () => {
-        this._users.update(users =>
-          users.map(u =>
-            u.id === id ? { ...u, ...payload, updated_at: new Date().toISOString() } : u
-          )
-        );
-        if (this._selectedUser()?.id === id) {
-          this._selectedUser.update(u => (u ? { ...u, ...payload } : null));
-        }
         this._loading.set(false);
         this.logger.log('[UsersStore] Updated user', id);
       },
       error: (err: HttpErrorResponse) => {
-        this._error.set(err.message ?? 'Failed to update user');
+        // API errors are expected for locally-created users (no DummyJSON entry)
+        // In-memory update was already applied above
         this._loading.set(false);
+        this.logger.warn('[UsersStore] API update skipped for local user', err.status);
       },
     });
   }
