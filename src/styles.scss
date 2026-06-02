@@ -334,4 +334,25 @@ body.dark-theme {
   .mat-mdc-menu-item .mat-icon {
     color: rgba(255, 255, 255, 0.6) !important;
   }
+
+  // Dialog surface dark background
+  .mat-mdc-dialog-surface {
+    background-color: #2d2d2d !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  .mat-mdc-dialog-title,
+  .mat-mdc-dialog-content,
+  .mdc-dialog__title,
+  .mdc-dialog__content {
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+
+  // Cancel button inside dialog: use dark-on-dark text so it's readable
+  .mat-mdc-dialog-actions .mat-mdc-button:not([color]) {
+    color: rgba(255, 255, 255, 0.6) !important;
+    &:hover {
+      color: rgba(255, 255, 255, 0.87) !important;
+    }
+  }
 }
